@@ -15,6 +15,7 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
         setInterval(() => {
             this.setDisplayDateTime();
         }, 500);
+        this.setLastNumberToDisplay();
     }
 
     setDisplayDateTime(){
@@ -29,10 +30,12 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
     
     clearAll(){
         this._operation=[];
+        this.setLastNumberToDisplay();
     }
  
     clearEntry(){
         this._operation.pop(); //elimina o ultimo valor do array
+        this.setLastNumberToDisplay();
     }
  
     setErro(){
@@ -50,23 +53,74 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
     getLastOperation(){
         return this._operation[this._operation.length-1];
     }
+
+    pushOperation(value){
+        this._operation.push(value);
+        if (this._operation.length > 3){
+            this.calc();
+            // console.log(this._operation);
+        }
+    }
+
+    calc(){
+        let last = '';
+        if (this._operation.length > 3){
+            last = this._operation.pop();
+        }
+        let result = eval(this._operation.join(''));
+        if (last == '%'){
+            result /= 100;
+            this._operation = [result];
+
+        }else{
+
+        // console.log(this._operation)
+        this._operation = [result];
+        if(last) this._operation.push(last);
+        }
+        console.log(result);
+        this.setLastNumberToDisplay();
+    }
+
+    setLastNumberToDisplay(){
+        let lastNumber;
+        for (let i = this._operation.length - 1; i >= 0; i--){
+            if (!this.isOperator(this._operation[i])){ //verificando se não é um operador ! nega a expressão
+                lastNumber = this._operation[i];
+                break;
+            }
+        }
+        if(!lastNumber) lastNumber = 0;
+        this.setDisplayCalc = lastNumber;
+    }
  
     addOperation(value){
-        console.log("a", this.getLastOperation());
+        // console.log("a", this.getLastOperation());
         if(isNaN(this.getLastOperation())){
             if(this.isOperator(value)){
                 this.setLastOperation(value);
+                // console.log(value);
             } else if(isNaN(value)) {  
-                console.log(value);
+                // console.log(value); //outra coisa alem de valores e operadores
             } else {
-                this._operation.push(value);
-                console.log(value);
+                this.pushOperation(value);
+                this.setLastNumberToDisplay();
+                // console.log(value);
             }
         } else {
-            let newValue = this.getLastOperation().toString() + value.toString();
-            this.setLastOperation(parseInt(newValue));
+            if (this.isOperator(value)){
+                this.pushOperation(value);
+            }else{
+                let newValue = this.getLastOperation().toString() + value.toString();
+                this.setLastOperation(parseInt(newValue));
+
+                //atualizar display
+                this.setLastNumberToDisplay();
+
+            }
+
         }
-        console.log(this._operation);
+        // console.log(this._operation);
     }
 
     execBtn(value){
@@ -94,7 +148,7 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
                 this.addOperation('%');
                 break;
             case 'igual':
-                
+                this.calc();
                 break;
             case 'ponto':
                     this.addOperation('.');
