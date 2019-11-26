@@ -31,7 +31,9 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
  
     
     clearAll(){
-        this._operation=[];
+        this._operation = [];
+        this._lastNumber = [];
+        this._lastOperator = [];
         this.setLastNumberToDisplay();
     }
  
@@ -42,6 +44,23 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
  
     setErro(){
         this._displayCalcEl = 'ERROR!';
+    }
+
+    addDot(){
+
+        let lastOperation = this.getLastOperation();
+
+        if(typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1) return;
+
+        if (this.isOperator(lastOperation) || !lastOperation){
+            this.pushOperation('0.');
+        }else{
+            this.setLastOperation(lastOperation.toString() + '.');
+        }
+
+        this.setLastNumberToDisplay();
+
+        // console.log(lastOperation);
     }
 
     setLastOperation(value){
@@ -71,6 +90,12 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
     calc(){
         let last = '';
         this._lastOperator = this.getLastItem();
+
+        if(this._operation.length < 3){
+            let firstItem = this._operation[0];
+            this._operation = [firstItem, this._lastOperator, this._lastNumber];
+        }
+
         if (this._operation.length > 3){
             last = this._operation.pop();
             this._lastNumber = this.getResult();//nada ou true para pegar um operador
@@ -78,8 +103,8 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
             this._lastNumber = this.getLastItem(false);//false para pegar um numero
         }
 
-        console.log('_lastOperator', this._lastOperator);
-        console.log('_lastNumber', this._lastNumber);
+        // console.log('_lastOperator', this._lastOperator);
+        // console.log('_lastNumber', this._lastNumber);
 
         let result = this.getResult();
         if (last == '%'){
@@ -106,6 +131,11 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
             }
 
         }
+
+        if (!lastItem){
+            lastItem = (isOperator) ? this._lastOperator : this._lastNumber;
+        }
+
         return lastItem;
     }
 
@@ -113,6 +143,7 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
         let lastNumber = this.getLastItem(false);
         if(!lastNumber) lastNumber = 0;
         this.setDisplayCalc = lastNumber;
+        console.log(lastNumber);
     }
  
     addOperation(value){
@@ -121,9 +152,10 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
             if(this.isOperator(value)){
                 this.setLastOperation(value);
                 // console.log(value);
-            } else if(isNaN(value)) {  
-                // console.log(value); //outra coisa alem de valores e operadores
-            } else {
+            } //else if(isNaN(value)) {  
+            //     console.log(value); //outra coisa alem de valores e operadores
+            // } 
+            else{
                 this.pushOperation(value);
                 this.setLastNumberToDisplay();
                 // console.log(value);
@@ -133,7 +165,7 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
                 this.pushOperation(value);
             }else{
                 let newValue = this.getLastOperation().toString() + value.toString();
-                this.setLastOperation(parseInt(newValue));
+                this.setLastOperation(newValue);
 
                 //atualizar display
                 this.setLastNumberToDisplay();
@@ -172,7 +204,7 @@ class CalcController { //classe é um conjunto de atributos ="variaveis" e méto
                 this.calc();
                 break;
             case 'ponto':
-                    this.addOperation('.');
+                    this.addDot('.');
                 break;    
                         
                 
